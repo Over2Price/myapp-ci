@@ -1,0 +1,53 @@
+﻿@page "/posetitelis/details"
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp.Data
+@inject IDbContextFactory<BlazorApp.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Подробнее</PageTitle>
+
+<h1>Подробнее о посетителе</h1>
+
+<div>
+    <hr />
+    @if (posetiteli is null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Фамилия</dt>
+            <dd class="col-sm-10">@posetiteli.Familiya</dd>
+            <dt class="col-sm-2">Имя</dt>
+            <dd class="col-sm-10">@posetiteli.Imya</dd>
+            <dt class="col-sm-2">Дата рождения</dt>
+            <dd class="col-sm-10">@posetiteli.Datebirth</dd>
+            <dt class="col-sm-2">Телефон</dt>
+            <dd class="col-sm-10">@posetiteli.Phone</dd>
+            <dt class="col-sm-2">Электронная почта</dt>
+            <dd class="col-sm-10">@posetiteli.Email</dd>
+        </dl>
+        <div>
+            <a href="@($"/posetitelis/edit?id={posetiteli.Id}")">Редактировать</a> |
+            <a href="@($"/posetitelis")">Возврат к списку посетителей</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Posetiteli? posetiteli;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        posetiteli = await context.posetitels.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (posetiteli is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

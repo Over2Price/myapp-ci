@@ -1,0 +1,40 @@
+﻿@page "/posetitelis"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BlazorApp.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<BlazorApp.Data.ApplicationDbContext> DbFactory
+
+<PageTitle>Посетители</PageTitle>
+
+<h1>Список посетителей</h1>
+
+<p>
+    <a href="posetitelis/create">Добавить</a>
+</p>
+
+<QuickGrid Class="table" Items="context.posetitels">
+    <PropertyColumn Property="posetiteli => posetiteli.Familiya" Title="Фамилия" />
+    <PropertyColumn Property="posetiteli => posetiteli.Imya" Title="Имя" />
+    <PropertyColumn Property="posetiteli => posetiteli.Datebirth" Title="Дата рождения" />
+    <PropertyColumn Property="posetiteli => posetiteli.Phone" Title="Телефон" />
+    <PropertyColumn Property="posetiteli => posetiteli.Email" Title="Электронная почта" />
+
+    <TemplateColumn Context="posetiteli">
+        <a href="@($"bilets?id={posetiteli.Id}&back=2")">Билеты</a> |
+        <a href="@($"posetitelis/edit?id={posetiteli.Id}")">Редактировать</a> |
+        <a href="@($"posetitelis/details?id={posetiteli.Id}")">Подробнее</a> |
+        <a href="@($"posetitelis/delete?id={posetiteli.Id}")">Удалить</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

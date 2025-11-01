@@ -1,0 +1,110 @@
+﻿@page "/bilets/create"
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp.Data
+@inject IDbContextFactory<BlazorApp.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Добавить</PageTitle>
+
+<h1>Добавить билет</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Bilet" OnValidSubmit="AddBilet" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            @if (back == 2)
+            {
+                <div class="mb-3">
+                    <label for="vistavka" class="form-label">Выставка</label>
+                    <InputSelect id="vistavka" @bind-Value="Bilet.Vistavka">
+                        <option value="">...</option>
+                        @if (vistavkis != null)
+                        {
+                            @foreach (var vistavka in vistavkis)
+                            {
+                                <option value="@vistavka.Id">@vistavka.Title</option>
+                            }
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Bilet.Vistavka" class="text-danger" />
+                </div>
+                <input type="hidden" name="Bilet.Posetitel" id="vistavka" @bind="Bilet.Posetitel"></input>
+            }
+            else if (back == 1)
+            {
+                <div class="mb-3">
+                    <label for="posetitel" class="form-label">Посетитель</label>
+                    <InputSelect id="posetitel" @bind-Value="Bilet.Posetitel" class="form-control">
+                        <option value="">...</option>
+                        @if (posetitelis != null)
+                        {
+                            @foreach (var posetiteli in posetitelis)
+                            {
+                                <option value="@posetiteli.Id">@posetiteli.Familiya @posetiteli.Imya</option>
+                            }
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Bilet.Posetitel" class="text-danger" />
+                </div>
+                <input type="hidden" name="Bilet.Vistavka" id="posetitel" @bind="Bilet.Vistavka"></input>
+            }
+            <div class="mb-3">
+                <label for="visitdate" class="form-label">Дата посещения</label> 
+                <InputDate id="visitdate" @bind-Value="Bilet.VisitDate" class="form-control" /> 
+                <ValidationMessage For="() => Bilet.VisitDate" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="cost" class="form-label">Стоимость</label> 
+                <InputNumber id="cost" @bind-Value="Bilet.Cost" class="form-control" /> 
+                <ValidationMessage For="() => Bilet.Cost" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="@($"bilets?id={id}&back={back}")">Возврат к списку билетов</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int? id { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int? back { get; set; }
+
+    [SupplyParameterFromForm]
+    private Bilet Bilet { get; set; } = new();
+
+    public IEnumerable<Vistavki> vistavkis = default!;
+    public IEnumerable<Posetiteli> posetitelis = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        if (id == null || back == null) NavigationManager.NavigateTo("notfound");
+
+        if (back == 1)
+        {
+            posetitelis = await context.posetitels.ToListAsync();
+            Bilet.Vistavka = id;
+        }
+        else if (back == 2)
+        {
+            vistavkis = await context.vistavkis.ToListAsync();
+            Bilet.Posetitel = id;
+        }
+    }
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddBilet()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.bilets.Add(Bilet);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/bilets?"+"id="+id.ToString()+"&back="+back.ToString());
+    }
+}

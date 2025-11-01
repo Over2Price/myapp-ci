@@ -1,0 +1,108 @@
+﻿@page "/posetitelis/edit"
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp.Data
+@inject IDbContextFactory<BlazorApp.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Редактировать</PageTitle>
+
+<h1>Редактировать посетителя</h1>
+
+<hr />
+@if (Posetiteli is null)
+{
+    <p><em>Загрузка...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Posetiteli" OnValidSubmit="UpdatePosetiteli" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Posetiteli.Id" value="@Posetiteli.Id" />
+                <div class="mb-3">
+                    <label for="familiya" class="form-label">Фамилия</label>
+                    <InputText id="familiya" @bind-Value="Posetiteli.Familiya" class="form-control" />
+                    <ValidationMessage For="() => Posetiteli.Familiya" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="imya" class="form-label">Имя</label>
+                    <InputText id="imya" @bind-Value="Posetiteli.Imya" class="form-control" />
+                    <ValidationMessage For="() => Posetiteli.Imya" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="datebirth" class="form-label">Дата рождения</label>
+                    <InputDate id="datebirth" @bind-Value="Posetiteli.Datebirth" class="form-control" />
+                    <ValidationMessage For="() => Posetiteli.Datebirth" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Телефон</label>
+                    <InputText id="phone" @bind-Value="Posetiteli.Phone" class="form-control" />
+                    <ValidationMessage For="() => Posetiteli.Phone" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Электронная почта</label>
+                    <InputText id="email" @bind-Value="Posetiteli.Email" class="form-control" />
+                    <ValidationMessage For="() => Posetiteli.Email" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/posetitelis">Возврат к списку посетителей</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Posetiteli? Posetiteli { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Posetiteli ??= await context.posetitels.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Posetiteli is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdatePosetiteli()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Posetiteli!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!PosetiteliExists(Posetiteli!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/posetitelis");
+    }
+
+    private bool PosetiteliExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.posetitels.Any(e => e.Id == id);
+    }
+}

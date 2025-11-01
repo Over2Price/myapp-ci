@@ -1,0 +1,63 @@
+﻿@page "/posetitelis/create"
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp.Data
+@inject IDbContextFactory<BlazorApp.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Добавить</PageTitle>
+
+<h1>Добавить посетителя</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Posetiteli" OnValidSubmit="AddPosetiteli" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="familiya" class="form-label">Фамилия</label> 
+                <InputText id="familiya" @bind-Value="Posetiteli.Familiya" class="form-control" /> 
+                <ValidationMessage For="() => Posetiteli.Familiya" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="imya" class="form-label">Имя</label> 
+                <InputText id="imya" @bind-Value="Posetiteli.Imya" class="form-control" /> 
+                <ValidationMessage For="() => Posetiteli.Imya" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="datebirth" class="form-label">Дата рождения</label> 
+                <InputDate id="datebirth" @bind-Value="Posetiteli.Datebirth" class="form-control" /> 
+                <ValidationMessage For="() => Posetiteli.Datebirth" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="phone" class="form-label">Телефон</label> 
+                <InputText id="phone" @bind-Value="Posetiteli.Phone" class="form-control" /> 
+                <ValidationMessage For="() => Posetiteli.Phone" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="email" class="form-label">Адрес</label> 
+                <InputText id="email" @bind-Value="Posetiteli.Email" class="form-control" /> 
+                <ValidationMessage For="() => Posetiteli.Email" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/posetitelis">Возврат к списку посетителей</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Posetiteli Posetiteli { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddPosetiteli()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.posetitels.Add(Posetiteli);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/posetitelis");
+    }
+}

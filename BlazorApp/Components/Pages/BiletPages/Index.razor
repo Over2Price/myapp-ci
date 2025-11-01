@@ -1,0 +1,74 @@
+﻿@page "/bilets"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BlazorApp.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<BlazorApp.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager navigationManager;
+
+<PageTitle>Список билетов</PageTitle>
+
+@if (back == 1)
+{
+    <h1>Список билетов выставки</h1>
+    <p><a href="vistavkis">Возврат к выставкам</a></p>
+}
+else
+{
+    <h1>Список билетов посетителя</h1>
+    <p><a href="posetitelis">Возврат к посетителям</a></p>
+}
+<p>
+    <a href="@($"bilets/create?id={id}&back={back}")">Добавить</a>
+</p>
+
+<QuickGrid Class="table" Items="context.bilets.Where(i=>back==1?i.Vistavka==id:i.Posetitel==id)">
+    @if (back == 1)
+    {
+        <PropertyColumn Property="i=>context.posetitels.Where(j=>j.Id==i.Posetitel).Select(j=>j.Familiya+' '.ToString()+j.Imya).FirstOrDefault()" Title="@title" />
+    }
+    else if(back==2)
+    {
+        <PropertyColumn Property="i=>context.vistavkis.Where(j=>j.Id==i.Vistavka).Select(j=>j.Title).FirstOrDefault()" Title="@title" />
+    }
+    <PropertyColumn Property="bilet => bilet.VisitDate" Title="Дата посещения" />
+    <PropertyColumn Property="bilet => bilet.Cost" Title="Стоимость" />
+
+    <TemplateColumn Context="bilet">
+        <a href="@($"bilets/edit?id={bilet.Id}&back={back}")">Редактировать</a> |
+        <a href="@($"bilets/details?id={bilet.Id}&back={back}")">Подробнее</a> |
+        <a href="@($"bilets/delete?id={bilet.Id}&back={back}")">Удалить</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int? id { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int? back { get; set; }
+
+    private ApplicationDbContext context = default!;
+
+    // private System.Linq.IQueryable<BlazorApp.Data.Vistavki> vistavki = default!;
+    // private System.Linq.IQueryable<BlazorApp.Data.Posetiteli> posetiteli = default!;
+    private string title = "";
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+        if (id == null || back == null) navigationManager.NavigateTo("notfound");
+        if (back == 1)
+        {
+            // posetiteli = context.posetitels.Where(j => j.Id == id);
+            title = "Посетитель";
+        }
+        else if (back == 2)
+        {
+            // vistavki = context.vistavkis.Where(j => j.Id == id);
+            title = "Выставка";
+        }
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

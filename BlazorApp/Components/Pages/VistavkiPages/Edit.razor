@@ -1,0 +1,107 @@
+﻿@page "/vistavkis/edit"
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp.Data
+@inject IDbContextFactory<BlazorApp.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Редактировать</PageTitle>
+
+<h1>Редактировать данные выставки</h1>
+<hr />
+@if (Vistavki is null)
+{
+    <p><em>Загрузка...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Vistavki" OnValidSubmit="UpdateVistavki" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Vistavki.Id" value="@Vistavki.Id" />
+                <div class="mb-3">
+                    <label for="title" class="form-label">Название</label>
+                    <InputText id="title" @bind-Value="Vistavki.Title" class="form-control" />
+                    <ValidationMessage For="() => Vistavki.Title" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Описание</label>
+                    <InputText id="description" @bind-Value="Vistavki.Description" class="form-control" />
+                    <ValidationMessage For="() => Vistavki.Description" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="datestart" class="form-label">Дата начала</label>
+                    <InputDate id="datestart" @bind-Value="Vistavki.DateStart" class="form-control" />
+                    <ValidationMessage For="() => Vistavki.DateStart" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="dateend" class="form-label">Дата окончания</label>
+                    <InputDate id="dateend" @bind-Value="Vistavki.DateEnd" class="form-control" />
+                    <ValidationMessage For="() => Vistavki.DateEnd" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Адрес проведения</label>
+                    <InputText id="address" @bind-Value="Vistavki.Address" class="form-control" />
+                    <ValidationMessage For="() => Vistavki.Address" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/vistavkis">Возврат к списку выставок</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Vistavki? Vistavki { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Vistavki ??= await context.vistavkis.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Vistavki is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateVistavki()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Vistavki!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!VistavkiExists(Vistavki!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/vistavkis");
+    }
+
+    private bool VistavkiExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.vistavkis.Any(e => e.Id == id);
+    }
+}

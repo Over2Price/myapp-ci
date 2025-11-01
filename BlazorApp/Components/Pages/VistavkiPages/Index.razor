@@ -1,0 +1,40 @@
+﻿@page "/vistavkis"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BlazorApp.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<BlazorApp.Data.ApplicationDbContext> DbFactory
+
+<PageTitle>Список выставок</PageTitle>
+
+<h1>Список выставок</h1>
+
+<p>
+    <a href="vistavkis/create">Добавить</a>
+</p>
+
+<QuickGrid Class="table" Items="context.vistavkis">
+    <PropertyColumn Property="vistavki => vistavki.Title" Title="Название"/>
+    <PropertyColumn Property="vistavki => vistavki.Description" Title="Описание" />
+    <PropertyColumn Property="vistavki => vistavki.DateStart" Title="Дата начала" />
+    <PropertyColumn Property="vistavki => vistavki.DateEnd" Title="Дата окончания" />
+    <PropertyColumn Property="vistavki => vistavki.Address" Title="Адрес проведения" />
+
+    <TemplateColumn Context="vistavki">
+        <a href="@($"bilets?id={vistavki.Id}&back=1")">Билеты</a> |
+        <a href="@($"vistavkis/edit?id={vistavki.Id}")">Редактировать</a> |
+        <a href="@($"vistavkis/details?id={vistavki.Id}")">Подробнее</a> |
+        <a href="@($"vistavkis/delete?id={vistavki.Id}")">Удалить</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
