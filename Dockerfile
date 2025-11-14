@@ -22,4 +22,4 @@ COPY --from=build /app/publish .
 # Указываем порт и команду для запуска приложения
 EXPOSE 8080
 # ВАЖНО: Замените <YOUR_PROJECT_NAME> на имя DLL вашего проекта!
-ENTRYPOINT ["dotnet", "myapp.dll"]
+ENTRYPOINT ["dotnet", "BlazorApp.dll"]
