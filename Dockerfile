@@ -1,26 +1,26 @@
 # --- Стадия сборки (build) ---
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+# Используем полный .NET SDK для сборки проекта
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Сначала просто скопируем ВСЕ файлы для диагностики
+# Копируем файлы проекта и восстанавливаем зависимости
+COPY BlazorApp/BlazorApp.csproj .
+RUN dotnet restore
+
+# Копируем все остальные исходные файлы и публикуем приложение
 COPY . .
-
-# Покажем что есть в директории
-RUN ls -la
-
-# Попробуем найти csproj файлы
-RUN find . -name "*.csproj" -type f
-
-# Если нашли файл, укажем его явно
-# RUN dotnet restore YourProjectName.csproj
-
-# Временно пропустим restore и попробуем publish
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish BlazorApp/BlazorApp.csproj -c Release -o /app/publish
 
 # --- Стадия выполнения (runtime) ---
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine
+# Используем легковесный образ ASP.NET Core runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
+
+# Копируем только опубликованные файлы из стадии 'build'
 COPY --from=build /app/publish .
 
+# Указываем порт и команду для запуска приложения
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "myapp.dll"]
+# ВАЖНО: Замените <YOUR_PROJECT_NAME> на имя DLL вашего проекта!
+ENTRYPOINT ["dotnet", "BlazorApp.dll"]
+
