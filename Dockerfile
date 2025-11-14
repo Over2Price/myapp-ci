@@ -4,12 +4,12 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
 # Копируем файлы проекта и восстанавливаем зависимости
-COPY BlazorApp.csproj .
+COPY BlazorApp/BlazorApp.csproj .
 RUN dotnet restore
 
 # Копируем все остальные исходные файлы и публикуем приложение
 COPY . .
-RUN dotnet publish BlazorApp.csproj -c Release -o /app/publish
+RUN dotnet publish BlazorApp/BlazorApp.csproj -c Release -o /app/publish
 
 # --- Стадия выполнения (runtime) ---
 # Используем легковесный образ ASP.NET Core runtime
