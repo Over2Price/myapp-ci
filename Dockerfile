@@ -1,6 +1,6 @@
 # --- Стадия сборки (build) ---
 # Используем полный .NET SDK для сборки проекта
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 WORKDIR /src
 
 # Копируем файлы проекта и восстанавливаем зависимости
@@ -13,7 +13,7 @@ RUN dotnet publish BlazorApp/BlazorApp.csproj -c Release -o /app/publish
 
 # --- Стадия выполнения (runtime) ---
 # Используем легковесный образ ASP.NET Core runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine
 WORKDIR /app
 
 # Копируем только опубликованные файлы из стадии 'build'
