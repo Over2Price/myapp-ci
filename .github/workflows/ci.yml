@@ -24,4 +24,15 @@ jobs:
       # Шаг 3: Проверить, что контейнер запускается
       - name: Test container
         run: |
-          docker run --rm myapp:test echo "Container works!"
+          # Запускаем контейнер в фоновом режиме
+          docker run -d --name test-container -p 8080:8080 myapp:test
+          # Ждем немного чтобы приложение запустилось
+          sleep 10
+          # Проверяем что контейнер работает
+          docker ps | grep test-container
+          # Проверяем логи на наличие успешного запуска
+          docker logs test-container | grep "Application started"
+          # Останавливаем контейнер
+          docker stop test-container
+          docker rm test-container
+          echo "Container test passed!"
