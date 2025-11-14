@@ -13,7 +13,7 @@ RUN dotnet publish BlazorApp/BlazorApp.csproj -c Release -o /app/publish
 
 # --- Стадия выполнения (runtime) ---
 # Используем легковесный образ ASP.NET Core runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine
 WORKDIR /app
 
 # Копируем только опубликованные файлы из стадии 'build'
